@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "kumapoon"
+version = "0.1.0"
+description = ""
+authors = ["matt <matt76k@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pygame = "^2.5.1"
+pydantic = "^2.1.1"
+pyyaml = "^6.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
