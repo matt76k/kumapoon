@@ -53,7 +53,10 @@ class Player(pygame.sprite.Sprite):
 
         hit = hits[0]
 
-        if self.is_moving_down():
+        if hit.rect.top < self.rect.centery < hit.rect.bottom:
+            self.vx = -self.vx
+            self.isOnGround = False
+        elif self.is_moving_down():
             self.vx, self.vy = 0, 0
             self.isOnGround = True
             self.rect.bottom = hit.rect.top
@@ -105,3 +108,6 @@ class Player(pygame.sprite.Sprite):
     
     def is_moving_up(self):
         return self.vy < 0
+
+    def is_moving_left(self):
+        return self.vx > 0
