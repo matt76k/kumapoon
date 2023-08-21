@@ -101,6 +101,11 @@ class Player(pygame.sprite.Sprite):
         self.update_jumptimer()
 
     def draw(self, window):
+        if self.jump_timer > 0:
+            power = int(255 * (self.jump_timer / MAX_JUMP_TIMER))
+            pygame.draw.circle(
+                window, (power, 255 - power, 0), self.rect.center, 30 * (self.jump_timer / MAX_JUMP_TIMER) + 20
+            )
         window.blit(self.image, self.rect)
 
     def is_moving_down(self):
