@@ -27,7 +27,7 @@ class Game:
         self.fps = pygame.time.Clock().tick
         self.player = Player()
         self.controller = controller
-        self.levels = MapLoader("assets/data/map.yaml").loadLevels()
+        self.map = MapLoader("assets/data/map.yaml")
         self.current_level = 0
 
     def check_event(self, event):
@@ -46,24 +46,27 @@ class Game:
 
     def run(self):
         obstacles = pygame.sprite.Group()
-        obstacles.add(*self.levels[self.current_level].obstacles)
+        obstacles.add(*self.map.levels[self.current_level].obstacles)
 
         while True:
             if self.check_event(pygame.QUIT):
                 break
 
+            if self.map.is_top(self.current_level):
+                self.map.add_level()
+
             if self.player.rect.top < 0:
                 self.current_level += 1
                 obstacles.empty()
-                obstacles.add(*self.levels[self.current_level].obstacles)
+                obstacles.add(*self.map.levels[self.current_level].obstacles)
                 self.player.rect.top += HEIGHT
             elif self.player.rect.bottom > HEIGHT:
                 self.current_level -= 1
                 obstacles.empty()
-                obstacles.add(*self.levels[self.current_level].obstacles)
+                obstacles.add(*self.map.levels[self.current_level].obstacles)
                 self.player.rect.top -= HEIGHT
 
-            self.window.fill(self.levels[self.current_level].bg)
+            self.window.fill(self.map.levels[self.current_level].bg)
             self.update_player(obstacles)
             obstacles.draw(self.window)
             pygame.display.update()

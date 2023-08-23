@@ -1,3 +1,4 @@
+import random
 from typing import List, Tuple
 
 import pygame
@@ -16,14 +17,28 @@ class Level(BaseModel):
 
 class MapLoader:
     def __init__(self, path):
-        self.path = path
+        self.levels = []
+        self._load_map(path)
+
+    def is_top(self, level: int) -> bool:
+        return len(self.levels) - 1 == level
+
+    def _load_map(self, path):
         with open(path, "r") as f:
-            self.data = yaml.safe_load(f)
+            map = yaml.safe_load(f)
+        self.levels += [Level(bg=(135, 206, 235), obstacles=[]) for _ in range(len(map))]
+        for idx, level in map.items():
+            for block in level["blocks"]:
+                self.levels[idx].obstacles.append(Block(*block))
 
-    def loadLevels(self):
-        levels = [Level(bg=(135, 206, 235), obstacles=[]) for _ in range(len(self.data))]
-        for idx, data in self.data.items():
-            for block in data["blocks"]:
-                levels[idx].obstacles.append(Block(*block))
+    def add_level(self):
+        num_blocks = random.randint(3, 8)
+        level = Level(bg=(135, 206, 235), obstacles=[])
+        for _ in range(num_blocks):
+            x = random.randint(0, 640)
+            y = random.randint(0, 900)
+            width = random.randint(30, 150)
+            height = random.randint(20, 50)
 
-        return levels
+            level.obstacles.append(Block(x, y, width, height))
+        self.levels.append(level)
