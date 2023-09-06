@@ -1,4 +1,4 @@
-import pygame
+import arcade
 
 from .constants import GRAVITY, HEIGHT, JUMP_SPEED_HORIZONTAL, MAX_JUMP_TIMER, MAX_VELOCITY, RUN_SPEED, WIDTH
 
@@ -7,14 +7,13 @@ class Line:
     pass
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("assets/images/kumapon.png").convert_alpha()
-        self.rect = self.image.get_rect()
+class Player(arcade.Sprite):
 
-        self.rect.centerx = WIDTH // 2
-        self.rect.centery = HEIGHT // 2
+    def __init__(self):
+        super().__init__(filename="assets/images/kumapon.png")
+
+        self.center_x = WIDTH // 2
+        self.center_y = HEIGHT // 2
         self.vx = 0
         self.vy = 0
 
@@ -30,7 +29,7 @@ class Player(pygame.sprite.Sprite):
             self.vy = 0
             return
 
-        self.vy = min(self.vy + GRAVITY, MAX_VELOCITY)
+        self.vy = max(self.vy - GRAVITY, -MAX_VELOCITY)
 
     def running(self):
         if self.isOnGround:
@@ -49,34 +48,23 @@ class Player(pygame.sprite.Sprite):
                     self.vy = 0
 
     def check_collisions(self, obstacles):
-        hits = [hit for hit in pygame.sprite.spritecollide(self, obstacles, False)]
-        if len(hits) == 0:
-            return
-
-        hit = hits[0]
-
-        if hit.rect.top < self.rect.centery < hit.rect.bottom:
-            self.vx = -self.vx
-            self.isOnGround = False
-        elif self.is_moving_down():
-            self.vx, self.vy = 0, 0
-            self.isOnGround = True
-            self.rect.bottom = hit.rect.top
-        elif self.is_moving_up():
-            self.vy = -self.vy
-            self.isOnGround = False
-            self.rect.top = hit.rect.bottom
+        for obstacle in obstacles:
+            if self.collides_with_sprite(obstacle):
+                if self.is_moving_down():
+                    self.vy = 0
+                    self.isOnGround = True
+                    self.bottom = obstacle.top
+                elif self.is_moving_up():
+                    self.vy = -self.vy
+                    self.isOnGround = False
+                    self.top = obstacle.bottom
+                elif obstacle.top > self.center_y > obstacle.bottom:
+                    self.vx = self.vx
+                    self.isOnGround = False
 
     def jump(self):
         if self.isOnGround and self.jump_timer > 0 and not self.isJumpPressed:
-            self.vy = -10 - self.jump_timer // 3
-            if self.isLeftPressed:
-                self.vx = -JUMP_SPEED_HORIZONTAL
-            elif self.isRightPressed:
-                self.vx = JUMP_SPEED_HORIZONTAL
-            else:
-                self.velx = 0
-
+            self.vy = 10 + self.jump_timer // 3
             self.isOnGround = False
             self.jump_timer = 0
 
@@ -91,28 +79,29 @@ class Player(pygame.sprite.Sprite):
         self.isOnGround = False
 
         # 両端
-        if self.rect.left < 0 or self.rect.right > WIDTH:
+        if self.left < 0 or self.right > WIDTH:
             self.vx = -self.vx
 
-        self.rect.centerx += self.vx
-        self.rect.centery += self.vy
+        self.center_x += self.vx
+        self.center_y += self.vy
 
         self.check_collisions(obstacles)
         self.update_jumptimer()
 
-    def draw(self, window):
+    def draw(self):
         if self.jump_timer > 0:
             power = int(255 * (self.jump_timer / MAX_JUMP_TIMER))
-            pygame.draw.circle(
-                window, (power, 255 - power, 0), self.rect.center, 30 * (self.jump_timer / MAX_JUMP_TIMER) + 20
+            arcade.draw_circle_filled(
+                self.center_x, self.center_y, 30 * (self.jump_timer / MAX_JUMP_TIMER) + 20, (power, 255 - power, 0)
             )
-        window.blit(self.image, self.rect)
+        super().draw()
+        # arcade.draw_sprite(self)
 
     def is_moving_down(self):
-        return self.vy > 0
+        return self.vy < 0
 
     def is_moving_up(self):
-        return self.vy < 0
+        return self.vy > 0
 
     def is_moving_left(self):
         return self.vx > 0

@@ -1,7 +1,7 @@
 import random
 from typing import List, Tuple
 
-import pygame
+import arcade
 import yaml
 from pydantic import BaseModel, ConfigDict
 
@@ -12,7 +12,7 @@ class Level(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     bg: Tuple[int, int, int]
-    obstacles: List[pygame.sprite.Sprite]
+    obstacles: List[arcade.Sprite]
 
 
 class MapLoader:
