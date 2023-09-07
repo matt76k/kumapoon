@@ -1,6 +1,6 @@
 import arcade
 
-from .constants import GRAVITY, HEIGHT, JUMP_SPEED_HORIZONTAL, MAX_JUMP_TIMER, MAX_VELOCITY, RUN_SPEED, WIDTH
+from .constants import PlayerConstants as PLAYER
 
 
 class Line:
@@ -9,90 +9,76 @@ class Line:
 
 class Player(arcade.Sprite):
 
-    def __init__(self):
-        super().__init__(filename="assets/images/kumapon.png")
+    def __init__(self, filename="assets/images/kumapon.png"):
+        super().__init__(filename=filename, hit_box_algorithm='Detailed')
 
-        self.center_x = WIDTH // 2
-        self.center_y = HEIGHT // 2
-        self.vx = 0
-        self.vy = 0
+        self.texture = self.textures[0]
+        self.hit_box = self.texture.hit_box_points
 
         self.jump_timer = 0
 
-        self.isOnGround = False
+        self.is_on_ground = False
         self.isLeftPressed = False
         self.isRightPressed = False
         self.isJumpPressed = False
 
-    def add_gravity(self):
-        if self.isOnGround:
-            self.vy = 0
-            return
+        self.left_edge = min(self.hit_box, key=lambda x: x[0])[0]
+        self.right_edge = max(self.hit_box, key=lambda x: x[0])[0]
+        self.top_edge = min(self.hit_box, key=lambda x: x[1])[1]
+        self.bottom_edge = max(self.hit_box, key=lambda x: x[1])[1]
 
-        self.vy = max(self.vy - GRAVITY, -MAX_VELOCITY)
+    @property
+    def top(self):
+        return self.center_y - self.top_edge
 
-    def running(self):
-        if self.isOnGround:
-            if self.isJumpPressed:
-                self.vx = 0
-                self.vy = 0
+    @property
+    def bottom(self):
+        return self.center_y - self.bottom_edge
+
+    @property
+    def left(self):
+        return self.center_x + self.left_edge
+
+    @property
+    def right(self):
+        return self.center_x + self.right_edge
+
+    def pymunk_moved(self, physics_engine, dx, dy, d_angle):
+        pass
+        # is_on_ground = physics_engine.is_on_ground(self)
+
+    def get_fx(self):
+        if not self.is_on_ground:
+            return 0
+
+        if self.isJumpPressed:
+            return 0
+        else:
+            if self.isRightPressed:
+                fx = PLAYER.RUN_SPEED
+            elif self.isLeftPressed:
+                fx = -PLAYER.RUN_SPEED
             else:
-                if self.isRightPressed:
-                    self.vx = RUN_SPEED
-                    self.vy = 0
-                elif self.isLeftPressed:
-                    self.vx = -RUN_SPEED
-                    self.vy = 0
-                else:
-                    self.vx = 0
-                    self.vy = 0
-
-    def check_collisions(self, obstacles):
-        for obstacle in obstacles:
-            if self.collides_with_sprite(obstacle):
-                if self.is_moving_down():
-                    self.vy = 0
-                    self.isOnGround = True
-                    self.bottom = obstacle.top
-                elif self.is_moving_up():
-                    self.vy = -self.vy
-                    self.isOnGround = False
-                    self.top = obstacle.bottom
-                elif obstacle.top > self.center_y > obstacle.bottom:
-                    self.vx = self.vx
-                    self.isOnGround = False
-
-    def jump(self):
-        if self.isOnGround and self.jump_timer > 0 and not self.isJumpPressed:
-            self.vy = 10 + self.jump_timer // 3
-            self.isOnGround = False
-            self.jump_timer = 0
+                fx = 0
+            return fx
 
     def update_jumptimer(self):
-        if self.isOnGround and self.isJumpPressed and self.jump_timer < MAX_JUMP_TIMER:
+        if self.jump_timer < PLAYER.MAX_JUMP_TIMER:
             self.jump_timer += 1
 
-    def update(self, obstacles):
-        self.add_gravity()
-        self.running()
-        self.jump()
-        self.isOnGround = False
-
-        # 両端
-        if self.left < 0 or self.right > WIDTH:
-            self.vx = -self.vx
-
-        self.center_x += self.vx
-        self.center_y += self.vy
-
-        self.check_collisions(obstacles)
+    def update(self):
+        # self.add_gravity()
+        self.get_fx()
+        # self.check_collisions(obstacles)
         self.update_jumptimer()
 
     def draw(self):
         if self.jump_timer > 0:
-            power = int(255 * (self.jump_timer / MAX_JUMP_TIMER))
+            power = int(255 * (self.jump_timer / PLAYER.MAX_JUMP_TIMER))
             arcade.draw_circle_filled(
-                self.center_x, self.center_y, 30 * (self.jump_timer / MAX_JUMP_TIMER) + 20, (power, 255 - power, 0)
+                self.center_x, self.center_y,
+                30 * (self.jump_timer / PLAYER.MAX_JUMP_TIMER) + 20,
+                (power, 255 - power, 0)
             )
         super().draw()
         # arcade.draw_sprite(self)

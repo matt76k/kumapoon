@@ -1,18 +1,18 @@
 import random
-from typing import List, Tuple
 
 import arcade
 import yaml
 from pydantic import BaseModel, ConfigDict
 
 from .shapes import Block
+from .constants import Constants as CONST
 
 
 class Level(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    bg: Tuple[int, int, int]
-    obstacles: List[arcade.Sprite]
+    bg: tuple[int, int, int]
+    obstacles: list[arcade.Sprite]
 
 
 class MapLoader:
@@ -31,12 +31,13 @@ class MapLoader:
             for block in level["blocks"]:
                 self.levels[idx].obstacles.append(Block(*block))
 
-    def add_level(self):
+    def add_level(self, current_level=0):
         num_blocks = random.randint(3, 8)
         level = Level(bg=(135, 206, 235), obstacles=[])
         for _ in range(num_blocks):
-            x = random.randint(0, 640)
-            y = random.randint(0, 900)
+            x = random.randint(0, CONST.WIDTH)
+            _y = CONST.HEIGHT * current_level
+            y = random.randint(_y, _y + CONST.HEIGHT)
             width = random.randint(30, 150)
             height = random.randint(20, 50)
 
