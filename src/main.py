@@ -67,6 +67,11 @@ class Game(arcade.Window):
                 self.physics_engine.set_horizontal_velocity(self.player, velocity_x)
             # print(_arbiter.normal)
 
+            if _arbiter.normal[1] > 0 and _arbiter.total_impulse[1] < 0:
+                f_x, f_y = _arbiter.total_impulse
+                self.physics_engine.apply_impulse(self.player, (-f_x * 0.6, f_y * 0.6))
+                print(_arbiter.total_impulse)
+
         self.physics_engine.add_collision_handler('player', 'wall', post_handler=block_hit_hundler)
 
     def on_key_press(self, key, modifiers):
@@ -103,6 +108,9 @@ class Game(arcade.Window):
 
         if is_on_ground and not jump:
             self.physics_engine.set_horizontal_velocity(self.player, force_x)
+            self.physics_engine.set_friction(self.player, 0)
+        else:
+            self.physics_engine.set_friction(self.player, 1.0)
 
         if jump and is_on_ground:
             self.physics_engine.set_horizontal_velocity(self.player, 0)
@@ -113,7 +121,7 @@ class Game(arcade.Window):
                 30 * (self.player.jump_timer / PLAYER.MAX_JUMP_TIMER) + 20,
                 (power, 255 - power, 0)
             )
-        elif self.released:
+        elif self.released and is_on_ground:
             jump_timer = min(self.player.jump_timer, PLAYER.MAX_JUMP_TIMER)
             force_y = 1000 + jump_timer * 30
             self.physics_engine.apply_impulse(self.player, (force_x, force_y))
