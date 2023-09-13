@@ -1,38 +1,47 @@
 import arcade
 
 
-class Block(arcade.Sprite):
-    def __init__(self, x, y, width=100, height=5, color=(255, 255, 255), gravity=1, fade=None):
-        super().__init__()
+class BlockBase(arcade.Sprite):
+    def __init__(self, x, y, width, height, filename=None):
+        super().__init__(
+            filename=filename,
+            center_x=x + width // 2, center_y=y + height // 2
+        )
+
+    def __repr__(self):
+        return f"{type(self)}({self.position})"
+
+
+class Block(BlockBase):
+    def __init__(
+        self, x, y, width=20, height=30, color=(116, 80, 48),
+        filename=None, texturename='block', gravity=1, fade=None
+    ):
+        super().__init__(x, y, width, height, filename)
         # arcade.draw_lrtb_rectangle_filled(x, x+width, y, y-height, color)
-        self.image_x = x
-        self.image_y = y
-        self.image_width = width
-        self.image_height = height
-        self.center_x = x + width // 2
-        self.center_y = y - height // 2
         self.gravity = gravity
         self.fade = fade
-        self.texture = arcade.Texture.create_filled('block', (width, height), color)
+        self.texture = arcade.Texture.create_filled(texturename, (width, height), color)
 
 
-# class Block(arcade.Sprite):
-#     def __init__(self, x: float, y: float, width: float = 100, height: float = 5,
-#                  color: arcade.Color = arcade.color.WHITE, gravity: float = 1,
-#                  fade: float = None):
-#         super().__init__()
-#         center_x = x + width / 2
-#         center_y = y + height / 2
-#         self.image = arcade.create_rectangle(center_x, center_y, width, height, color)
-#         self.gravity = gravity
-#         self.fade = fade
+class Cushion(BlockBase):
+    def __init__(
+        self, x, y, width=20, height=5, color=(0, 0, 0),
+        filename=None, texturename='cushion'
+    ):
+        super().__init__(x, y, width, height, filename)
+        self.texture = arcade.Texture.create_filled(texturename, (width, height), color)
 
-#     def update(self):
-#         # 重力で下へ移動
-#         self.y += self.gravity
 
-#         # フェードアウトする
-#         if self.fade is not None:
-#             self.alpha -= self.fade
-#             if self.alpha <= 0:
-#                 self.kill()
+class Flag(arcade.Sprite):
+    def __init__(self, x, y, width=20, height=30, scale=0.2, filename='./assets/images/flag.png'):
+        super().__init__(
+            filename=filename, scale=scale,
+            center_x=x + width // 2, center_y=y + height // 2
+        )
+
+
+# class Flag(BlockBase):
+#     def __init__(self, x, y, width=20, height=30, filename='./assets/images/flag.png'):
+#         # print(x, y)
+#         super().__init__(x, y, width, height, filename, scale=0.2)

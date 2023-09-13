@@ -30,13 +30,12 @@ class Human(Controller):
         keys = list(kwargs['current'])
         if kwargs['key'] == arcade.key.LEFT:
             key_index = 0
-            print('left')
         elif kwargs['key'] == arcade.key.RIGHT:
             key_index = 1
-            print('right')
         elif kwargs['key'] == arcade.key.SPACE:
             key_index = 2
-            print('space')
+        else:
+            return (False, False, False)
         keys[key_index] = kwargs['pressed']
 
         return tuple(keys)

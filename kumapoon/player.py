@@ -66,23 +66,6 @@ class Player(arcade.Sprite):
         if self.jump_timer < PLAYER.MAX_JUMP_TIMER:
             self.jump_timer += 1
 
-    def update(self):
-        # self.add_gravity()
-        self.get_fx()
-        # self.check_collisions(obstacles)
-        self.update_jumptimer()
-
-    def draw(self):
-        if self.jump_timer > 0:
-            power = int(255 * (self.jump_timer / PLAYER.MAX_JUMP_TIMER))
-            arcade.draw_circle_filled(
-                self.center_x, self.center_y,
-                30 * (self.jump_timer / PLAYER.MAX_JUMP_TIMER) + 20,
-                (power, 255 - power, 0)
-            )
-        super().draw()
-        # arcade.draw_sprite(self)
-
     def is_moving_down(self):
         return self.vy < 0
 
